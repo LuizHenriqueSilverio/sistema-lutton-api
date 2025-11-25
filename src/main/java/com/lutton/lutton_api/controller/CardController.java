@@ -22,7 +22,7 @@ public class CardController {
       this.cardService = cardService;
   }
 
-  @PostMapping("/criar")
+  @PostMapping()
   public ResponseEntity<CardResponseDTO> criar(
     @Valid @RequestBody CardCreateDTO dto, 
     Principal principal
@@ -34,7 +34,7 @@ public class CardController {
     return ResponseEntity.status(HttpStatus.CREATED).body(novoCard);
   }
 
-  @GetMapping()
+  @GetMapping("/listar")
   public ResponseEntity<List<CardResponseDTO>> listarCards(
     @RequestParam(required = false) String categoriaId,
     Principal principal
@@ -44,5 +44,29 @@ public class CardController {
     List<CardResponseDTO> cards = cardService.listar(usuarioId, categoriaId);
 
     return ResponseEntity.ok(cards);
+  }
+
+  @GetMapping("/{id}")
+  public ResponseEntity<CardResponseDTO> buscarPorId(@PathVariable String id) 
+          throws ExecutionException, InterruptedException {
+      CardResponseDTO card = cardService.buscarPorId(id);
+      if (card == null) return ResponseEntity.notFound().build();
+      return ResponseEntity.ok(card);
+  }
+
+  @PutMapping("/{id}")
+  public ResponseEntity<String> atualizar(
+          @PathVariable String id, 
+          @RequestBody CardCreateDTO dto) throws ExecutionException, InterruptedException {
+      
+      cardService.atualizar(id, dto);
+      return ResponseEntity.ok("Card atualizado!");
+  }
+
+  @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deletar(@PathVariable String id) 
+      throws ExecutionException, InterruptedException {
+        cardService.deletar(id);
+        return ResponseEntity.noContent().build();
   }
 }

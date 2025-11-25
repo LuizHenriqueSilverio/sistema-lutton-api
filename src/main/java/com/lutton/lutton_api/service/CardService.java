@@ -2,9 +2,11 @@ package com.lutton.lutton_api.service;
 
 import com.google.api.core.ApiFuture;
 import com.google.cloud.firestore.DocumentReference;
+import com.google.cloud.firestore.DocumentSnapshot;
 import com.google.cloud.firestore.Firestore;
 import com.google.cloud.firestore.QueryDocumentSnapshot;
 import com.google.cloud.firestore.QuerySnapshot;
+import com.google.cloud.firestore.WriteResult;
 import com.lutton.lutton_api.dto.CardCreateDTO;
 import com.lutton.lutton_api.dto.CardResponseDTO; // (Crie este DTO simples com id, nome, etc)
 import com.lutton.lutton_api.model.Card;
@@ -12,7 +14,9 @@ import org.springframework.stereotype.Service;
 import com.google.cloud.firestore.Query;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
 @Service
@@ -74,5 +78,41 @@ public class CardService {
       }
 
       return listaResposta;
+  }
+
+  public CardResponseDTO buscarPorId(String id) throws ExecutionException, InterruptedException {
+      DocumentReference docRef = firestore.collection("cards").document(id);
+      ApiFuture<DocumentSnapshot> future = docRef.get();
+      DocumentSnapshot document = future.get();
+
+      if (document.exists()) {
+          Card card = document.toObject(Card.class);
+          
+          CardResponseDTO dto = new CardResponseDTO();
+          dto.setId(document.getId());
+          dto.setNome(card.getNome());
+          dto.setDescricao(card.getDescricao());
+          dto.setCategoriaId(card.getCategoriaId());
+          
+          return dto;
+      } else {
+          return null;
+      }
+  }
+
+  public void atualizar(String id, CardCreateDTO dto) throws ExecutionException, InterruptedException {
+    DocumentReference docRef = firestore.collection("cards").document(id);
+    Map<String, Object> updates = new HashMap<>();
+    updates.put("nome", dto.getNome());
+    updates.put("descricao", dto.getDescricao());
+    updates.put("categoriaId", dto.getCategoriaId());
+
+    ApiFuture<WriteResult> writeResult = docRef.update(updates);
+    
+    writeResult.get();
+  }
+
+  public void deletar(String id) throws ExecutionException, InterruptedException {    
+    firestore.collection("cards").document(id).delete().get();
   }
 }

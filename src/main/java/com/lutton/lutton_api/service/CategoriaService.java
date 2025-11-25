@@ -2,6 +2,7 @@ package com.lutton.lutton_api.service;
 
 import com.google.api.core.ApiFuture;
 import com.google.cloud.firestore.DocumentReference;
+import com.google.cloud.firestore.DocumentSnapshot;
 import com.google.cloud.firestore.Firestore;
 import com.google.cloud.firestore.QueryDocumentSnapshot;
 import com.google.cloud.firestore.QuerySnapshot;
@@ -61,5 +62,25 @@ public class CategoriaService {
         listaResposta.add(dto);
     }
     return listaResposta;
+  }
+
+  public CategoriaResponseDTO buscarPorId(String id) throws ExecutionException, InterruptedException {
+        DocumentSnapshot document = firestore.collection("categorias").document(id).get().get();
+        if (document.exists()) {
+            Categoria cat = document.toObject(Categoria.class);
+            CategoriaResponseDTO dto = new CategoriaResponseDTO();
+            dto.setId(document.getId());
+            dto.setNome(cat.getNome());
+            return dto;
+        }
+        return null;
+    }
+
+  public void atualizar(String id, String novoNome) throws ExecutionException, InterruptedException {
+      firestore.collection("categorias").document(id).update("nome", novoNome).get();
+  }
+
+  public void deletar(String id) throws ExecutionException, InterruptedException {
+      firestore.collection("categorias").document(id).delete().get();
   }
 }
